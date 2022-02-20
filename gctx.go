@@ -13,13 +13,12 @@ import (
 // return. If this is not sufficient, because the child outlives f, the child
 // has to create its own gctx, which can be based on the gctx of f.
 func Do(ctx context.Context, f func()) {
-	oldLabels := runtimeGetProfLabel()
 	id := newID()
 	gctx := pprof.WithLabels(ctx, label(id))
 	add(gctx, id)
 	pprof.SetGoroutineLabels(gctx)
 	f()
-	runtimeSetProfLabel(oldLabels)
+	pprof.SetGoroutineLabels(ctx)
 	delete(id)
 }
 
