@@ -46,16 +46,15 @@ always use a `context.Context` as the first parameter in all functions that
 require knowledge about a goroutine specific context.
 
 However, there are also good reasons to have such a goroutine specific context
-generally available. The most common one is logging: For example there are many
-libraries that don't support a context parameter (yet), but they allow to hook
-your own code into it by providing interfaces or callbacks. If such code is not
-strictly serialized (which is the usual case in concurrent code), there is no
-possibility to correlate the callbacks with the originating call into the
-library, without the possibility to "tunnel" a context through the 3rd party
-library. Also in your own code, logging, especially debug logs or tracing, can
-appear everywhere in your code. That means to realize context aware debug
-logging, a context must be added to *every* *single* function, which is simply
-unnecessary boilerplate and in most cases not feasible.
+generally available. The most common reason is logging:
+
+- There are libraries that don't support a context parameter (yet). When such a
+  library is producing logs one might want to annotate the log message with the
+  context in which the library call has been made. But without the possibility
+  to "tunnel" a context through the library that is not possible. 
+- Debug logs or tracing can appear anywhere in your code. To annotate these logs
+  with the current context, it must be added to *every* *single* function, which
+  is simply unnecessary boilerplate and in most cases not feasible.
 
 `gctx` allows to solve these situations by attaching a context to the current
 goroutine, which can be retrieved from any code that is running in the goroutine
