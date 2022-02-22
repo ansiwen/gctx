@@ -2,6 +2,10 @@
 
 Implementation of a goroutine context (`gctx`).
 
+> **TL;DR** \
+> Set a goroutine context with `gctx.Set(ctx)` and retrieve it from anywhere in
+> the same or a child goroutine with `gctx.Get()`.
+
 A gctx is a `context.Context` that is neither global, nor in the local function
 scope, but a property of a specific goroutine. It can only be created and
 retrieved by code being executed within the according goroutine.
