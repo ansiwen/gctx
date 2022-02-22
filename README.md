@@ -63,11 +63,19 @@ easily possible.)
 
 These functions are managing a pointer to a `labelMap` (which is a
 `map[string]string`) in the goroutine-local storage. `gctx` extends this type to
-piggyback a `context.Context` on it and stores pointes to objects of this
-extended yet compatible type instead of the original `labelMap`. A special label
-in the `labelMap` is set that indicates, that a context is available. That way
-the attached context is - like the labels - automatically memory managed and
-inherited by child goroutines. 
+piggyback a `context.Context` on it:
+
+```golang
+struct {
+	labelMap
+	context.Context
+}
+```
+
+It stores pointers to objects of this extended yet compatible type instead of
+the original `labelMap`. A special label in the `labelMap` is set that
+indicates, that a context is available. That way the attached context is - like
+the labels - automatically memory managed and inherited by child goroutines. 
 
 ## Usage
 
