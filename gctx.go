@@ -6,10 +6,14 @@ package gctx
 import (
 	"context"
 	"runtime/pprof"
+	"strconv"
+	"sync/atomic"
 	"unsafe"
 )
 
 const labelTag = "github.com/ansiwen/gctx"
+
+var lastID uintptr
 
 type labelMapAndContext struct {
 	lm  labelMap
@@ -27,7 +31,8 @@ func Set(ctx context.Context) {
 	} else {
 		gctx.lm = make(labelMap)
 	}
-	gctx.lm[labelTag] = ""
+	id := atomic.AddUintptr(&lastID, 1)
+	gctx.lm[labelTag] = strconv.FormatUint(uint64(id), 16)
 	gctx.ctx = ctx
 	runtimeSetProfLabel(unsafe.Pointer(&gctx))
 }

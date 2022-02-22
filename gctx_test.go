@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"runtime/pprof"
+	"strconv"
 	"sync"
 	"testing"
+	"unsafe"
 )
 
 // Assert ...
@@ -60,6 +62,23 @@ func TestGctxSetWithLabel(t *testing.T) {
 	assert(v == "test")
 	v, _ = pprof.Label(gctx, "foo")
 	assert(v == "bar")
+}
+
+func TestGctxSetLabelID(t *testing.T) {
+	assert := assert(t)
+	ctx := context.WithValue(context.Background(), ctxKey{}, "test")
+	Set(ctx)
+	lm := (*labelMap)(runtimeGetProfLabel())
+	assert(lm != nil)
+	id, ok := strconv.ParseUint((*lm)[labelTag], 16, int(unsafe.Sizeof(lastID)))
+	assert(ok == nil)
+	assert(id > 0)
+	Set(ctx)
+	lm = (*labelMap)(runtimeGetProfLabel())
+	assert(lm != nil)
+	id2, ok := strconv.ParseUint((*lm)[labelTag], 16, int(unsafe.Sizeof(lastID)))
+	assert(ok == nil)
+	assert(id2 != id)
 }
 
 func TestGctxDoubleSet(t *testing.T) {
