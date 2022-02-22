@@ -26,9 +26,10 @@ logging, a context must be added to *every* *single* function, which is simply
 unnecessary boilerplate and in most cases not feasible.
 
 `gctx` allows to solve these situations by attaching a context to the current
-goroutine, which can be retrieved from any code that is running in the
-goroutine. It is effectively a goroutine local storage. Therefore it is advised
-to only use it, if there is no other possibility available.
+goroutine, which can be retrieved from any code that is running in the goroutine
+with a simple `gctx.Get()` call. It is effectively a goroutine local storage.
+Therefore it is advised to only use it, if there is no other possibility
+available.
 
 ## How
 In fact, goroutines *do* [have an
