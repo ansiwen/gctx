@@ -1,4 +1,7 @@
 # gctx
+[![Build Status](https://github.com/ansiwen/gctx/workflows/CI/badge.svg?branch=master)](https://github.com/ansiwen/gctx/actions?query=branch%3Amaster)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ansiwen/gctx)](https://goreportcard.com/report/github.com/ansiwen/gctx)
+[![GoDoc](https://pkg.go.dev/badge/github.com/ansiwen/gctx?status.svg)](https://pkg.go.dev/github.com/ansiwen/gctx?tab=doc)
 
 Implementation of a goroutine context (`gctx`).
 
