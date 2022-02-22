@@ -11,7 +11,32 @@ Implementation of a goroutine context (`gctx`).
 
 A gctx is a `context.Context` that is neither global, nor in the local function
 scope, but a property of a specific goroutine. It can only be created and
-retrieved by code being executed within the according goroutine.
+retrieved by code being executed within the according goroutine. The gctx can be
+set with `gctx.Set()`:
+
+```golang
+ctx := context.WithValue(context.Background(), myCtxVal{}, "foobar")
+go func() {
+    gctx.Set(ctx)
+    ...
+    /* some code that eventually calls doSomething() */
+    ...
+}()
+```
+
+Then, from any function called within this goroutine this gctx can be retrieved
+with `gctx.Get()`:
+
+```golang
+func doSomething() {
+    ...
+    ctx := gctx.Get()
+    v := ctx.Value(myCtxVal{})
+    log.Printf("ctx: %v", v) // prints "ctx: foobar"
+    ...
+}
+```
+
 
 ## Why
 The Go language decided for good reasons that goroutines are [anonymous by
