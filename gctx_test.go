@@ -169,39 +169,3 @@ func TestGctxInherit(t *testing.T) {
 	wg2.Done()
 	wg3.Wait()
 }
-
-func Example_logger() {
-	type requestID struct{}
-
-	// "global" logger instance
-	log := func(s string) {
-		rid, _ := Get().Value(requestID{}).(int)
-		fmt.Printf("[LOG] reqID: %d - %s\n", rid, s)
-	}
-
-	// placeholder for an external function without context support doing an
-	// arbitrary request and using a global logger
-	createSomeResource := func() {
-		log("sent create request")
-	}
-
-	var wg sync.WaitGroup
-	// asynchronously request 5 times to create some resource
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		ctx := context.WithValue(context.Background(), requestID{}, i)
-		go func() {
-			Set(ctx)
-			createSomeResource()
-			wg.Done()
-		}()
-	}
-	wg.Wait()
-
-	// Unordered output:
-	// [LOG] reqID: 0 - sent create request
-	// [LOG] reqID: 1 - sent create request
-	// [LOG] reqID: 2 - sent create request
-	// [LOG] reqID: 3 - sent create request
-	// [LOG] reqID: 4 - sent create request
-}
