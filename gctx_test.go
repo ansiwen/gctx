@@ -156,16 +156,19 @@ func TestGctxInherit(t *testing.T) {
 
 func Example_logger() {
 	type requestID struct{}
+
 	// "global" logger instance
 	log := func(s string) {
 		rid, _ := Get().Value(requestID{}).(int)
 		fmt.Printf("[LOG] reqID: %d - %s\n", rid, s)
 	}
+
 	// placeholder for an external function without context support doing an
 	// arbitrary request and using a global logger
 	createSomeResource := func() {
 		log("sent create request")
 	}
+
 	var wg sync.WaitGroup
 	// asynchronously request 5 times to create some resource
 	for i := 0; i < 5; i++ {
@@ -178,6 +181,7 @@ func Example_logger() {
 		}()
 	}
 	wg.Wait()
+
 	// Unordered output:
 	// [LOG] reqID: 0 - sent create request
 	// [LOG] reqID: 1 - sent create request
