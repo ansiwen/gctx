@@ -6,24 +6,40 @@ package gctx
 import (
 	"context"
 	"runtime/pprof"
+	"unsafe"
 )
 
-// Do calls f with ctx set as the current goroutine's gctx. Goroutines created
-// within f inhert the gctx, but it is only available as long as f didn't
-// return. If this is not sufficient, because the child outlives f, the child
-// has to create its own gctx, which can be based on the gctx of f.
-func Do(ctx context.Context, f func()) {
-	id := newID()
-	gctx := pprof.WithLabels(ctx, label(id))
-	add(gctx, id)
-	pprof.SetGoroutineLabels(gctx)
-	f()
-	pprof.SetGoroutineLabels(ctx)
-	delete(id)
+const labelTag = "github.com/ansiwen/gctx"
+
+type labelMapAndContext struct {
+	lm  labelMap
+	ctx context.Context
 }
 
-// Get retrieves the current goroutines gctx. It returns nil if no gctx has been
-// created, or it has already been deleted.
+// Set ctx as the current goroutine's gctx. Goroutines created within this
+// goroutine inherit the gctx.
+func Set(ctx context.Context) {
+	var gctx labelMapAndContext
+	pprof.SetGoroutineLabels(ctx)
+	lm := (*labelMap)(runtimeGetProfLabel())
+	if lm != nil && len(*lm) > 0 {
+		gctx.lm = *lm
+	} else {
+		gctx.lm = make(labelMap)
+	}
+	gctx.lm[labelTag] = ""
+	gctx.ctx = ctx
+	runtimeSetProfLabel(unsafe.Pointer(&gctx))
+}
+
+// Get retrieves the current goroutines gctx.
 func Get() context.Context {
-	return get(currentID())
+	lm := (*labelMap)(runtimeGetProfLabel())
+	if lm != nil {
+		if _, ok := (*lm)[labelTag]; ok {
+			gctx := (*labelMapAndContext)(unsafe.Pointer(lm))
+			return gctx.ctx
+		}
+	}
+	return nil
 }

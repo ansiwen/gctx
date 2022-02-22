@@ -31,30 +31,44 @@ goroutine. It is effectively a goroutine local storage. Therefore it is advised
 to only use it, if there is no other possibility available.
 
 ## How
-There have been a couple of attempts to implement goroutine-local storage in
-order to solve these problems, like:
+In fact, goroutines *do* [have an
+ID](https://github.com/golang/go/blob/851ecea4cc99ab276109493477b2c7e30c253ea8/src/runtime/runtime2.go#L438),
+but it is hidden and not accessible with any exported API. That's why there have
+been a couple of attempts to circumvent that by implementing a goroutine-local
+storage in order to solve above problems, like for example:
  - https://github.com/jtolio/gls
  - https://github.com/tylerb/gls
  - https://github.com/modern-go/gls
 
- but all these packages are pretty inefficient and/or are highly dependent on
- implementation details. In fact, goroutines *do* [have an
-ID](https://github.com/golang/go/blob/851ecea4cc99ab276109493477b2c7e30c253ea8/src/runtime/runtime2.go#L438),
-but it is hidden and not accessible with any exported API. But there is another
-goroutine property that *is* - at least partly - exported: [profiling
-labels](https://pkg.go.dev/runtime/pprof). They can be stored with
+But all these packages are pretty inefficient and/or are highly dependent on
+implementation details.
+
+Fortunately, there is another goroutine property that *is* - at least partly -
+exported: [profiling labels](https://pkg.go.dev/runtime/pprof). They can be
+stored with
 [`runtime/pprof.SetGoroutineLabels()`](https://pkg.go.dev/runtime/pprof#SetGoroutineLabels)
-in the goroutine local storage and therefore can be used to store an identifier
-for a goroutine specific context. However, there is no exported API that allows
-to read these label from the goroutine local storage. In order to make (ab)use
-of these labels for a `gctx`, it is required to do one little hack: the internal
-function
+in the goroutine local storage and are automatically inherited by child
+goroutines. But again, there is no exported API that allows to read these label
+from the goroutine local storage.
+
+So, in order to make (ab)use of these labels for a
+`gctx`, it is required to do one little runtime hack: the internal functions
+[`setProfLabel()`](https://github.com/golang/go/blob/851ecea4cc99ab276109493477b2c7e30c253ea8/src/runtime/proflabel.go#L12)
+and
 [`getProfLabel()`](https://github.com/golang/go/blob/851ecea4cc99ab276109493477b2c7e30c253ea8/src/runtime/proflabel.go#L38)
-must be made accessible with a single `//go:linkname` instruction. Of course
-this is also an implementation detail, than can break anytime. But since it is
-part of an exported functionality, it can't just disappear, and a fix will
-always be easily possible.
+must be made accessible with a `//go:linkname` instruction. (Of course this is
+also an implementation detail, that could break anytime. But since it is part of
+an exported functionality, it can't just disappear, and a fix should always be
+easily possible.)
+
+These functions are managing a pointer to a `labelMap` (which is a
+`map[string]string`) in the goroutine-local storage. `gctx` extends this type to
+piggyback a `context.Context` on it and stores pointes to objects of this
+extended yet compatible type instead of the original `labelMap`. A special label
+in the `labelMap` is set that indicates, that a context is available. That way
+the attached context is - like the labels - automatically memory managed and
+inherited by child goroutines. 
 
 ## Usage
 
-See examples and tests.
+See documentation and examples.
