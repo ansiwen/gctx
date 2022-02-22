@@ -10,7 +10,6 @@ import (
 	"unsafe"
 )
 
-// Assert ...
 func assert(t *testing.T) func(bool, ...interface{}) {
 	return func(ok bool, args ...interface{}) {
 		t.Helper()
@@ -20,7 +19,6 @@ func assert(t *testing.T) func(bool, ...interface{}) {
 	}
 }
 
-// AssertB ...
 func assertB(b *testing.B) func(bool, ...interface{}) {
 	return func(ok bool, args ...interface{}) {
 		b.Helper()
@@ -30,7 +28,6 @@ func assertB(b *testing.B) func(bool, ...interface{}) {
 	}
 }
 
-// CtxKey ...
 type ctxKey struct{} // nolint
 
 func TestGctxSet(t *testing.T) {
