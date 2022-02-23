@@ -37,7 +37,8 @@ func Set(ctx context.Context) {
 	runtimeSetProfLabel(unsafe.Pointer(&gctx))
 }
 
-// Get retrieves the current goroutines gctx.
+// Get the current goroutine's gctx, which has been set in the same or a parent
+// goroutine with gctx.Set() before.
 func Get() context.Context {
 	lm := (*labelMap)(runtimeGetProfLabel())
 	if lm != nil {
