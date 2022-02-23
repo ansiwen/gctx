@@ -24,8 +24,8 @@ go func() {
 }()
 ```
 
-Then, from any function called within this goroutine this gctx can be retrieved
-with `gctx.Get()`:
+Then, from any function called within the same or a child goroutine this gctx
+can be retrieved with `gctx.Get()`:
 
 ```golang
 func doSomething() {
@@ -54,7 +54,7 @@ generally available. The most common reason is logging:
   to "tunnel" a context through the library to the log callback, that is not
   possible.
 - Debug logs or tracing appear *anywhere* in your code. Annotating these logs
-  with the current contex would require to add a context parameter to *every*
+  with the current context would require to add a context parameter to *every*
   *single* *function*, which is simply unnecessary boilerplate and in most cases
   not feasible.
 
