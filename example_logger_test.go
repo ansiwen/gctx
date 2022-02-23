@@ -8,24 +8,24 @@ import (
 	"github.com/ansiwen/gctx"
 )
 
+type requestID struct{}
+
+// "global" logger instance
+func log(s string) {
+	ctx := gctx.Get()
+	reqID, _ := ctx.Value(requestID{}).(int)
+	fmt.Printf("[LOG] reqID: %d - %s\n", reqID, s)
+}
+
+// placeholder for an external library function without context support
+// doing something and using a global logger
+func someLibraryFunction() {
+	/* ... */
+	log("did something")
+	/* ... */
+}
+
 func Example_logger() {
-	type requestID struct{}
-
-	// "global" logger instance
-	log := func(s string) {
-		ctx := gctx.Get()
-		reqID, _ := ctx.Value(requestID{}).(int)
-		fmt.Printf("[LOG] reqID: %d - %s\n", reqID, s)
-	}
-
-	// placeholder for an external library function without context support
-	// doing something and using a global logger
-	someLibraryFunction := func() {
-		/* ... */
-		log("did something")
-		/* ... */
-	}
-
 	var wg sync.WaitGroup
 	// asynchronously call a library function for 5 times
 	for i := 0; i < 5; i++ {
